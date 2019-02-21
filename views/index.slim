@@ -1,0 +1,7 @@
+form action='/translate' method='post'
+  input name="text"
+  - if @languags.any?
+    select name="languages[]" multiple="true"
+      - @languags.each do |key, language|
+        option(value=key)= language['name']
+  button Translate

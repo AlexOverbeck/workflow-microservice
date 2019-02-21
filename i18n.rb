@@ -9,18 +9,27 @@ class I18n
     new(*args).perform
   end
 
-  def initialize(text, options={})
+  def self.get_supported_languages
     host = 'https://api.cognitive.microsofttranslator.com'
-    path = '/translate?api-version=3.0'
-    params = '&to=de&to=it'
+    path = '/languages?api-version=3.0'
+    uri = URI(host + path)
+    request = Net::HTTP::Get.new(uri)
+    
+    response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      http.request(request)
+    end
 
-    @text = text
-    @uri = URI (host + path + params)
+    JSON.parse(response.body.force_encoding("utf-8"))['translation']
   end
 
-  def perform
+  def initialize(text, options={})
+    @text = text
+    @uri = build_uri(options.fetch(:locale, :en))
+  end
+
+  def perform(request: translation_request)
     response = Net::HTTP.start(@uri.host, @uri.port, use_ssl: @uri.scheme == 'https') do |http|
-      http.request(translation_request)
+      http.request(request)
     end
 
     JSON.parse(response.body.force_encoding("utf-8"))
@@ -35,5 +44,18 @@ class I18n
     request['X-ClientTraceId'] = SecureRandom.uuid
     request.body = body
     request
+  end
+
+  def build_uri(locales)
+    url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0'
+    puts URI(url + build_params(locales))
+
+    URI(url + build_params(locales))
+  end
+
+  def build_params(locales)
+    return "&to=#{locales}" unless locales.is_a? Array
+
+    '&to=' + locales.map(&:to_s).join('&to=') if locales.any?
   end
 end
