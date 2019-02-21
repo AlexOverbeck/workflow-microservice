@@ -1,9 +1,9 @@
-form action='/translate' method='post'
+form action='/bulk_translate.json' method='post'
   label for="text" Your Message
   input#text name="text" placeholder="Your message goes here"
   - if @languags.any?
     label for="languages" Select one or more languages
-    select#languages name="languages[]" multiple="true"
+    select#languages name="languages" multiple="true"
       - @languags.each do |key, language|
         option(value=key)= language['name']
   button Translate

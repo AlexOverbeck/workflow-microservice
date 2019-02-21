@@ -9,19 +9,6 @@ class I18n
     new(*args).perform
   end
 
-  def self.get_supported_languages
-    host = 'https://api.cognitive.microsofttranslator.com'
-    path = '/languages?api-version=3.0'
-    uri = URI(host + path)
-    request = Net::HTTP::Get.new(uri)
-    
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-      http.request(request)
-    end
-
-    JSON.parse(response.body.force_encoding("utf-8"))['translation']
-  end
-
   def initialize(text, options={})
     @text = text
     @uri = build_uri(options.fetch(:locale, :en))
@@ -57,5 +44,18 @@ class I18n
     return "&to=#{locales}" unless locales.is_a? Array
 
     '&to=' + locales.map(&:to_s).join('&to=') if locales.any?
+  end
+
+  def self.get_supported_languages
+    host = 'https://api.cognitive.microsofttranslator.com'
+    path = '/languages?api-version=3.0'
+    uri = URI(host + path)
+    request = Net::HTTP::Get.new(uri)
+    
+    response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      http.request(request)
+    end
+
+    JSON.parse(response.body.force_encoding("utf-8"))['translation']
   end
 end
